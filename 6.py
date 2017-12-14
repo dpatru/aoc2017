@@ -1,6 +1,7 @@
 #! /usr/local/bin/python3
 
-# run as: ./6.py < 6.txt 
+# run as: ./6.py < 6.txt
+
 
 import numpy as np
 
