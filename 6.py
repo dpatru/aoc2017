@@ -1,14 +1,18 @@
 #! /usr/local/bin/python3
 
+# run as: ./6.py < 6.txt 
+
 import numpy as np
 
 xs = []
 
 def rearrange(bs):
     seen = set()
+    whenSeen = dict();
     c = 0
     while tuple(bs) not in seen:
         seen.add(tuple(bs))
+        whenSeen[tuple(bs)] = c
         i = np.argmax(bs)
         blocks = bs[i]
         bs[i] = 0
@@ -17,7 +21,7 @@ def rearrange(bs):
             bs[i] += 1
             blocks -= 1
         c += 1
-    return c
+    return c, c - whenSeen[tuple(bs)]
 
 
 while True:
