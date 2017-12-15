@@ -1,0 +1,73 @@
+* Advent of Code 2017 day 11
+
+** hex grid
+
+How do we represent a hex grid?  
+
+*** zigzag
+It looks like a regular square grid, but the columns are displaced one half unit, so that when you want to go straight right, you end up zigzagging a bit. If we want to zigzag, then we need to consider diagnal movements (ne,nw,se,sw) as location dependent. A ne move from the 0th column does not change the y coordinate, but a ne move from the 1st column does.
+
+*** Up, Down, Diagnol Up, Diagonal Neutral
+From each square, you can go directly up or down (n or s). Also, you can jump up diagonally, or stay on the same level right or left. (This makes the grid droop down from column 0.)
+
+You could go from (0,0) to (1,1) in one step, but from (0,0) to (-1, -1) would take you two steps. Once to go down. Once to move over. 
+
+*** Diagonals with up jumps and down jumps
+You have a two axis, up left and up right. N takes you both up left and up right. 
+
+*** Three axis
+We could have three axis. The problem here is that each cell can have multiple representations. This closely fits the problem. All we need then is a set of rules that reduce a representation to a cannonical one. 
+
+Let's call the axis upleft, up, and upright.
+Let x, y, z be positive integers.
+Cononical form should be the form with the minimum sum of the absolute value of the coordinates.
+Then:
+(x, y, x+z) = (0, y+x, z) # reduce sum
+(x+z, y, x) = (z, y+x, 0)
+(x, y, -x) = (-x, y, x) # increasing order
+(0,x,-x) = (x,0,0)
+(0,-x,x) = (-x,0,0)
+
+(0,0,3) 
+(0,0,2) + (0,0,-2) = (0,0,0)
+(0,0,2) + (0,-2,0) = (0,-2,2) = (-2,0,0)
+(-2,0,-3) = (0,-2,-1) 
+(2, 0, 1) + (-1, 0, 0) = (1,0,1) = (0,1,0)
+
+**** How do we reduce to cannoncial form? 
+
+***** first try
+1) Make first coord 0 by adding it from the middle coordinate and subtracting from the last coordinate.
+2) If the coordinates have different signs, then reduce each by zeroing one out.
+
+
+***** Let's try again: 
+A reduced form will not have the first and last coordinates of the same sign, because they could be replaced by a straight up or down in the middle coordinate. So if they are the same sign, reduce them by subtracting from each the minimum. (At least one of them should then be zero.)
+
+If the first and last have different signs, then we know that the cell is displaced laterally, but we are concerned that the middle coordinate may be too big. 
+1,1,-1 -> 2,0,0
+1,-1,-1 -> 0,0,-2
+
+1,2,-1 -> 2,1,0
+1,2,-3 -> 2,1,-2 -> 3,0,-1
+1,3,-2 -> 2,2,-1 -> 3,1,0
+1,2,-3 -> 2,1,-2->3,0,-1 -/> 0, 3, -4
+0, 3, -4 -> 3, 0, -1
+
+When there is a net lateral displacement, one of the coordinates should be zero.
+If the middle term is zero, then the other terms should be oposite sign. Otherwise, the middle term should be the same sign. 
+
+Rules: 
+Determine if there is lateral displacement. Are the first and last coordinates the same sign?
+If yes, then subtract the smaller from the larger, and add the smaller to the middle coordinate. Zero out the smaller.
+If no, then reduce the middle term until it's zero or one of the other terms are zero.
+
+Try again:
+
+1. Zero out the middle coord by adding it to each of the end coords.
+2. While the end coords are the same sign, reduce them and add to the middle coord. Stop when one or both of the end coords go to zero.
+
+2 is the same This is the same as: let m be min(x,z, key=abs), (x-m, m, y-m)
+
+
+
