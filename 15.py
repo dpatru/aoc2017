@@ -3,12 +3,14 @@
 def ga(x):
     while True:
         x = (x * 16807) % 2147483647
+        # return x # part 1
         if x % 4 == 0:
             return x
 
 def gb(x):
     while True:
         x = (x * 48271) % 2147483647
+        # return x # part 1
         if x % 8 == 0:
             return x
 
