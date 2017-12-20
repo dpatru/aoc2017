@@ -1,16 +1,21 @@
 #! /usr/local/bin/python3
 
-import re
-from functools import reduce
+from collections import deque
 
 steps = 329 # input
-buf = [0]
-pos = 0
-#for i in range(1, 2017+1):
+buf = deque([0]) # will always insert at the beginning
+for i in range(1, 2017+1):
+    buf.rotate(-1*(steps + 1) % len(buf))
+    buf.appendleft(i)
+
+print(buf[1])
+
+# part 2
+steps = 329 # input
+buf = deque([0]) # will always insert at the beginning
 for i in range(1, 50000000+1):
-    pos = ((pos + steps) % len(buf)) + 1
-    buf.insert(pos, i)
-    if i % 100000 == 0: print(i)
-#print(buf[(pos+1)%len(buf)])
-i = buf.index(0)
-print(buf[(i+1)%len(buf)])
+    buf.rotate(-1*(steps + 1) % len(buf))
+    buf.appendleft(i)
+    if i % 200000 == 0: print("i", i) # see progress
+i = (buf.index(0) + 1)%len(buf)
+print(buf[i])
