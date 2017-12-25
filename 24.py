@@ -6,20 +6,37 @@ import re
 
 parse = re.compile(r'(\d+)/(\d+)')
 import fileinput
-parts = [tuple(map(int,parse.match(line).groups()))
-         for line in fileinput.input()]
+parts = tuple(tuple(map(int,parse.match(line).groups()))
+              for line in fileinput.input())
 # print(len(parts), parts)
 partlookup = defaultdict(list) # port -> part index, 2 entries per part
-# for i,(j,k) in enumerate(parts):
-#     partlookup[j].append(i)
-#     partlookup[k].append(i)
 for i,p in enumerate(parts):
     for x in p:
         partlookup[x].append(i)
 
+# print('parts')
+# for i,p in enumerate(parts):
+#     print(i,p)
+# print()
+
+
+def orderSeq(seq):
+    prev = 0
+    r = []
+    for p in [parts[i] for i in seq]:
+        if p[0] == prev:
+            r.append(p)
+            prev = p[1]
+        else:
+            r.append(p[::-1])
+            prev = p[0]
+    return r
+
 unfinished = [((i,),max(parts[i])) for i in partlookup[0]]
 bestval = 0
 bestseq = ()
+
+sequences = 0
 while unfinished:
     seq, i = unfinished.pop()
     final = True
@@ -29,13 +46,17 @@ while unfinished:
             x,y = parts[j]
             unfinished.append((seq + (j,), x if y == i else y))
     if final:
-        val = sum(x for x in parts[i] for i in seq)
+        sequences += 1
+        val = sum(sum(parts[i]) for i in seq)
         if bestval < val:
             bestval = val
             bestseq = seq
-        print('best', bestval, bestseq)
+            print(len(unfinished),'unfinished, best', bestval, bestseq, orderSeq(bestseq))
 
-exit(0)
+print(sequences,'sequences tried')
+
+
+# exit(0)
         
 # for i in sorted(partlookup.keys()):
 #     print(i, partlookup[i])
@@ -45,34 +66,29 @@ exit(0)
 Chain = namedtuple('Chain', 'val seq port')
 def inc(chain, i):
     x,y = parts[i]
-    return Chain(chain.val+x+y, chain.seq+(i,), x if chain.port == y else y)
+    return Chain(val=chain.val+x+y,
+                 seq=chain.seq+(i,),
+                 port = x if chain.port == y else y)
 def mkChain(seq):
-    return reduce(inc, seq, Chain(0,(),0))
+    return reduce(inc, seq, Chain(val=0,seq=(),port=0))
 
-# When all you have is a hammer, you try to see every problem as a
-# nail. Dikstra's shortest path argument allows cutoffs and pruning. Can we use this idea here?
 
-# Alternatively, what can we tell about the solution chains just by
-# looking? Ports link to other like ports in pairs. Where there are
-# odd number of ports, either we have to end in that port, or the
-# component doesn't get used.
-
-# for p  in sorted(partlookup.keys()):
-#     indexes = partlookup[p]
-#     if len(indexes) %2 == 1:
-#         print(p, len(indexes))
-
+sequences = 0
 def build():
     unfinished=[mkChain([i]) for i in partlookup[0]]
+    print('unfinished0 =', unfinished)
     best = Chain(0,(),0)
     while unfinished:
         c = unfinished.pop()
         while True: # build a full chain, putting the partial chains on the unfinished stack
             nextParts = [p for p in partlookup[c.port] if p not in c.seq]
             if not nextParts: # finished a sequence
+                global sequences
+                sequences += 1
                 if c.val > best.val:
                     best = c
-                    print(len(unfinished), 'unfinished, best',best)
+                    print(len(unfinished), 'unfinished, best',best,
+                          orderSeq(best.seq), sum(sum(parts[i]) for i in best.seq))
                 break
             else:
                 n = nextParts.pop()
@@ -80,3 +96,4 @@ def build():
                 unfinished.extend(inc(c,p) for p in nextParts)
 
 build()
+print(sequences,'sequences tried')
